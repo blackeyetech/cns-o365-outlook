@@ -69,6 +69,7 @@ async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
   await msGraphApi.sendMessage(
     [toAddress],
     [],
+    [],
     userEmail,
     subject,
     body,

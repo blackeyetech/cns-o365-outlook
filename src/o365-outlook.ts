@@ -24,6 +24,13 @@ process.on("unhandledRejection", error => {
   console.log("unhandledRejection", error);
 });
 
+// interfaces here
+interface MessageAttachement {
+  name: string;
+  contentType: string;
+  contentB64: string;
+}
+
 // MsGraphApi class here
 class CNMsGraphApi extends CNShell {
   // Properties here
@@ -204,29 +211,21 @@ class CNMsGraphApi extends CNShell {
   }
 
   // Public methods here
-  public async sendMessage(
+  public async createMessage(
     toRecipients: string[],
     ccRecipients: string[],
+    bccRecipients: string[],
     user: string,
     subject: string,
     content: string,
     contentType: MSGraph.BodyType,
-    refCode: string,
-  ): Promise<boolean> {
-    this.info("Attempting to send an email for refCode %s", refCode);
-
+  ): Promise<string> {
     let message: MSGraph.Message = {
       subject,
       body: {
         contentType,
         content,
       },
-      singleValueExtendedProperties: [
-        {
-          id: EMAIL_REF_GUID,
-          value: refCode,
-        },
-      ],
     };
 
     message.toRecipients = [];
@@ -247,6 +246,148 @@ class CNMsGraphApi extends CNShell {
           address: recipient,
         },
       });
+    }
+
+    message.bccRecipients = [];
+
+    for (let recipient of bccRecipients) {
+      message.bccRecipients.push({
+        emailAddress: {
+          address: recipient,
+        },
+      });
+    }
+
+    let res = await this.httpReq({
+      method: "post",
+      url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages`,
+      headers: {
+        Authorization: `Bearer ${this._token}`,
+        "Content-Type": "application/json",
+      },
+      data: { message },
+    }).catch(e => {
+      this.error("Error while creating message - (%s)", e);
+    });
+
+    if (res === undefined || res.status !== 201) {
+      return "";
+    }
+
+    return res.data.id;
+  }
+
+  // public async addAttachement(id: string, user: string): Promise<boolean> {
+  //   let res = await this.httpReq({
+  //     method: "post",
+  //     url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages/${id}/attachments`,
+  //     headers: {
+  //       Authorization: `Bearer ${this._token}`,
+  //       "Content-Type": "application/json",
+  //     },
+  //   }).catch(e => {
+  //     this.error("Error while creating message - (%s)", e);
+  //   });
+
+  //   if (res === undefined || res.status !== 202) {
+  //     return false;
+  //   }
+
+  //   return true;
+  // }
+
+  public async sendDraft(id: string, user: string): Promise<boolean> {
+    let res = await this.httpReq({
+      method: "post",
+      url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages/${id}/send`,
+      headers: {
+        Authorization: `Bearer ${this._token}`,
+        "Content-Type": "application/json",
+      },
+    }).catch(e => {
+      this.error("Error while creating message - (%s)", e);
+    });
+
+    if (res === undefined || res.status !== 202) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public async sendMessage(
+    toRecipients: string[],
+    ccRecipients: string[],
+    bccRecipients: string[],
+    user: string,
+    subject: string,
+    content: string,
+    contentType: MSGraph.BodyType,
+    refCode?: string,
+    attachments?: MessageAttachement[],
+  ): Promise<boolean> {
+    let message: MSGraph.Message = {
+      subject,
+      body: {
+        contentType,
+        content,
+      },
+    };
+
+    if (refCode !== undefined) {
+      message.singleValueExtendedProperties = [
+        {
+          id: EMAIL_REF_GUID,
+          value: refCode,
+        },
+      ];
+    }
+
+    message.toRecipients = [];
+
+    for (let recipient of toRecipients) {
+      message.toRecipients.push({
+        emailAddress: {
+          address: recipient,
+        },
+      });
+    }
+
+    message.ccRecipients = [];
+
+    for (let recipient of ccRecipients) {
+      message.ccRecipients.push({
+        emailAddress: {
+          address: recipient,
+        },
+      });
+    }
+
+    message.bccRecipients = [];
+
+    for (let recipient of bccRecipients) {
+      message.bccRecipients.push({
+        emailAddress: {
+          address: recipient,
+        },
+      });
+    }
+
+    message.attachments = [];
+
+    if (attachments !== undefined) {
+      for (let attachment of attachments) {
+        let aObj = {
+          "@odata.type": "#microsoft.graph.fileAttachment",
+          name: attachment.name,
+          contentType: attachment.contentType,
+          contentBytes: attachment.contentB64,
+          contentId: "",
+          isInline: false,
+        };
+
+        message.attachments.push(aObj);
+      }
     }
 
     let res = await this.httpReq({
@@ -523,4 +664,4 @@ class CNMsGraphApi extends CNShell {
   }
 }
 
-export { CNMsGraphApi };
+export { CNMsGraphApi, MessageAttachement };
