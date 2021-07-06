@@ -27,7 +27,6 @@
     "format-js": "prettier --write 'dist/**/*.{js,ts}'",
     "format-misc": "prettier --write '**/*.{json,md,yaml}'",
     "install-bin": "npm install -g $(npm pack . | tail -1)",
-    "pretest": "tsc --build tsconfig.tests.json",
     "test": "mocha",
     "clean": "rm -rf ./dist ./tests-dist",
     "prepare": "npm run clean && npm run format-ts && npm run format-misc && tsc",
