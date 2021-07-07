@@ -3,6 +3,9 @@ import { CNMsGraphApi } from "./o365-outlook";
 import inquirer from "inquirer";
 // import EasyTable from "easy-table";
 
+import fs from "fs";
+import path from "path";
+
 // enums here
 enum Prompts {
   USER = "User",
@@ -11,6 +14,8 @@ enum Prompts {
   TO = "To",
   SUBJECT = "Subject",
   BODY = "Body",
+  ATTACHMENT = "Attach",
+  TYPE = "Type",
 }
 
 enum TestChoices {
@@ -66,6 +71,32 @@ async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
 
   let body = answer[Prompts.BODY];
 
+  answer = await inquirer.prompt([
+    {
+      type: "input",
+      name: Prompts.ATTACHMENT,
+      message: "File to attach (leave empty to ignore):",
+    },
+  ]);
+
+  let attach = answer[Prompts.ATTACHMENT];
+  let contentType = "";
+  let content: Buffer = Buffer.from("");
+
+  if (attach.lenth) {
+    content = fs.readFileSync(attach);
+
+    answer = await inquirer.prompt([
+      {
+        type: "input",
+        name: Prompts.TYPE,
+        message: "File type:",
+      },
+    ]);
+
+    contentType = answer[Prompts.ATTACHMENT];
+  }
+
   await msGraphApi.sendMessage(
     [toAddress],
     [],
@@ -75,6 +106,15 @@ async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
     body,
     "text",
     refCode,
+    attach.lenth
+      ? [
+          {
+            name: path.basename(attach),
+            contentType,
+            contentB64: content.toString("base64"),
+          },
+        ]
+      : undefined,
   );
 }
 
