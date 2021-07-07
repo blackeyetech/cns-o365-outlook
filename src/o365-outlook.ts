@@ -277,24 +277,38 @@ class CNMsGraphApi extends CNShell {
     return res.data.id;
   }
 
-  // public async addAttachement(id: string, user: string): Promise<boolean> {
-  //   let res = await this.httpReq({
-  //     method: "post",
-  //     url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages/${id}/attachments`,
-  //     headers: {
-  //       Authorization: `Bearer ${this._token}`,
-  //       "Content-Type": "application/json",
-  //     },
-  //   }).catch(e => {
-  //     this.error("Error while creating message - (%s)", e);
-  //   });
+  public async addAttachement(
+    id: string,
+    user: string,
+    attachment: MessageAttachement,
+  ): Promise<boolean> {
+    let data = {
+      "@odata.type": "#microsoft.graph.fileAttachment",
+      name: attachment.name,
+      contentType: attachment.contentType,
+      contentBytes: attachment.contentB64,
+      contentId: "",
+      isInline: false,
+    };
 
-  //   if (res === undefined || res.status !== 202) {
-  //     return false;
-  //   }
+    let res = await this.httpReq({
+      method: "post",
+      url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages/${id}/attachments`,
+      headers: {
+        Authorization: `Bearer ${this._token}`,
+        "Content-Type": "application/json",
+      },
+      data,
+    }).catch(e => {
+      this.error("Error while creating message - (%s)", e);
+    });
 
-  //   return true;
-  // }
+    if (res === undefined || res.status !== 201) {
+      return false;
+    }
+
+    return true;
+  }
 
   public async sendDraft(id: string, user: string): Promise<boolean> {
     let res = await this.httpReq({
