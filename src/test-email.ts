@@ -79,12 +79,12 @@ async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
     },
   ]);
 
-  let attach = answer[Prompts.ATTACHMENT];
+  let fileName: string = answer[Prompts.ATTACHMENT];
   let contentType = "";
   let content: Buffer = Buffer.from("");
 
-  if (attach.lenth) {
-    content = fs.readFileSync(attach);
+  if (fileName.length) {
+    content = fs.readFileSync(fileName);
 
     answer = await inquirer.prompt([
       {
@@ -106,10 +106,10 @@ async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
     body,
     "text",
     refCode,
-    attach.lenth
+    fileName.length
       ? [
           {
-            name: path.basename(attach),
+            name: path.basename(fileName),
             contentType,
             contentB64: content.toString("base64"),
           },
