@@ -2,6 +2,11 @@
   "version": "1.2.2",
   "name": "@cn-shell/o365-outlook",
   "description": "A Cloud Native extension for Office 365 Outlook",
+  "main": "./dist/o365-outlook.js",
+  "bin": "",
+  "files": [
+    "dist/**/*"
+  ],
   "lint-staged": {
     "**/*.js": [
       "prettier --write",
