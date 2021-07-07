@@ -1,4 +1,4 @@
-import { CNMsGraphApi } from "./o365-outlook";
+import { CNO365Outlook } from "./o365-outlook";
 
 import inquirer from "inquirer";
 // import EasyTable from "easy-table";
@@ -30,7 +30,7 @@ enum TestChoices {
 }
 
 // Tests here
-async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
+async function sendMessage(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
       type: "input",
@@ -118,7 +118,7 @@ async function sendMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
   );
 }
 
-async function replyTo(userEmail: string, msGraphApi: CNMsGraphApi) {
+async function replyTo(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
       type: "input",
@@ -142,7 +142,7 @@ async function replyTo(userEmail: string, msGraphApi: CNMsGraphApi) {
   await msGraphApi.replyToAllInConversation(userEmail, body, refCode);
 }
 
-async function checkMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
+async function checkMessage(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
       type: "input",
@@ -160,7 +160,7 @@ async function checkMessage(userEmail: string, msGraphApi: CNMsGraphApi) {
   }
 }
 
-async function getConversation(userEmail: string, msGraphApi: CNMsGraphApi) {
+async function getConversation(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
       type: "input",
@@ -176,7 +176,7 @@ async function getConversation(userEmail: string, msGraphApi: CNMsGraphApi) {
   console.log(JSON.stringify(conversation, undefined, 2));
 }
 
-async function getUnreadMessages(userEmail: string, msGraphApi: CNMsGraphApi) {
+async function getUnreadMessages(userEmail: string, msGraphApi: CNO365Outlook) {
   let messages = await msGraphApi.getUnreadMessages(userEmail);
 
   console.log(JSON.stringify(messages, undefined, 2));
@@ -184,7 +184,7 @@ async function getUnreadMessages(userEmail: string, msGraphApi: CNMsGraphApi) {
 
 async function getUnreadMessagesFromConversation(
   userEmail: string,
-  msGraphApi: CNMsGraphApi,
+  msGraphApi: CNO365Outlook,
 ) {
   let answer = await inquirer.prompt([
     {
@@ -204,7 +204,7 @@ async function getUnreadMessagesFromConversation(
   console.log(JSON.stringify(messages, undefined, 2));
 }
 
-async function markEmailRead(userEmail: string, msGraphApi: CNMsGraphApi) {
+async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
       type: "input",
@@ -230,7 +230,7 @@ async function markEmailRead(userEmail: string, msGraphApi: CNMsGraphApi) {
 
 // Main here
 (async () => {
-  let msGraphApi = new CNMsGraphApi("Test-MS-Graph-API");
+  let msGraphApi = new CNO365Outlook("Test-MS-Graph-API");
   await msGraphApi.init();
 
   let answer = await inquirer.prompt([

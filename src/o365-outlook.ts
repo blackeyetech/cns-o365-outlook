@@ -31,8 +31,8 @@ interface MessageAttachement {
   contentB64: string;
 }
 
-// MsGraphApi class here
-class CNMsGraphApi extends CNShell {
+// CNO365Outlook class here
+class CNO365Outlook extends CNShell {
   // Properties here
   private _appId: string;
   private _clientSecret: string;
@@ -678,4 +678,4 @@ class CNMsGraphApi extends CNShell {
   }
 }
 
-export { CNMsGraphApi, MessageAttachement };
+export { CNO365Outlook, MessageAttachement };
