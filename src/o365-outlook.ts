@@ -589,10 +589,11 @@ class CNO365Outlook extends CNShell {
 
   public async getUnreadMessages(
     user: string,
+    numOfMsgs: number = 10,
   ): Promise<MSGraph.Message[] | undefined> {
     let query = qs.stringify({
-      $filter: `receivedDateTime ge 2021-06-30T00:01:00Z and isRead eq false`,
-      $top: 10,
+      $filter: "isRead eq false",
+      $top: numOfMsgs,
     });
 
     let res = await this.httpReq({
