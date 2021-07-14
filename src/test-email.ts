@@ -26,6 +26,7 @@ enum TestChoices {
   GET_UNREAD = "Get for unread emails",
   GET_UNREAD_CONVERSATION = "Get for unread emails from conversation",
   MARK_READ = "Mark email as read",
+  GET_LAST_UNREAD = "Get last unread email",
   QUIT = "Quit",
 }
 
@@ -204,6 +205,15 @@ async function getUnreadMessagesFromConversation(
   console.log(JSON.stringify(messages, undefined, 2));
 }
 
+async function getLastUnreadMessages(
+  userEmail: string,
+  msGraphApi: CNO365Outlook,
+) {
+  let messages = await msGraphApi.getUnreadMessages(userEmail, 1);
+
+  console.log(JSON.stringify(messages, undefined, 2));
+}
+
 async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
@@ -287,6 +297,9 @@ async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
         break;
       case TestChoices.GET_UNREAD_CONVERSATION:
         await getUnreadMessagesFromConversation(userEmail, msGraphApi);
+        break;
+      case TestChoices.GET_LAST_UNREAD:
+        await getLastUnreadMessages(userEmail, msGraphApi);
         break;
     }
   }
