@@ -20,13 +20,14 @@ enum Prompts {
 
 enum TestChoices {
   SEND = "Send Email",
-  CHECK_SENT = "Check Email",
   REPLY = "Reply to email",
   GET = "Get Conversation",
   GET_UNREAD = "Get for unread emails",
   GET_UNREAD_CONVERSATION = "Get for unread emails from conversation",
   MARK_READ = "Mark email as read",
-  GET_LAST_UNREAD = "Get last unread email",
+  CREATE_DRAFT = "Create a Draft",
+  COPY_DRAFT = "Copy Draft",
+  SEND_DRAFT = "Send Draft",
   QUIT = "Quit",
 }
 
@@ -143,24 +144,6 @@ async function replyTo(userEmail: string, msGraphApi: CNO365Outlook) {
   await msGraphApi.replyToAllInConversation(userEmail, body, refCode);
 }
 
-async function checkMessage(userEmail: string, msGraphApi: CNO365Outlook) {
-  let answer = await inquirer.prompt([
-    {
-      type: "input",
-      name: Prompts.REF,
-      message: "Input ref code to check for:",
-    },
-  ]);
-
-  let check = await msGraphApi.getMessage(userEmail, answer[Prompts.REF]);
-
-  if (check !== undefined) {
-    console.log("Email for ref code %s was sent", answer[Prompts.REF]);
-  } else {
-    console.log("Email for ref code %s was not sent", answer[Prompts.REF]);
-  }
-}
-
 async function getConversation(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
@@ -205,10 +188,7 @@ async function getUnreadMessagesFromConversation(
   console.log(JSON.stringify(messages, undefined, 2));
 }
 
-async function getLastUnreadMessages(
-  userEmail: string,
-  msGraphApi: CNO365Outlook,
-) {
+async function copyDraft(userEmail: string, msGraphApi: CNO365Outlook) {
   let messages = await msGraphApi.getUnreadMessages(userEmail, 1);
 
   console.log(JSON.stringify(messages, undefined, 2));
@@ -260,12 +240,14 @@ async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
         name: Prompts.TEST,
         choices: [
           TestChoices.GET,
-          TestChoices.CHECK_SENT,
           TestChoices.REPLY,
           TestChoices.SEND,
           TestChoices.GET_UNREAD,
           TestChoices.GET_UNREAD_CONVERSATION,
           TestChoices.MARK_READ,
+          TestChoices.CREATE_DRAFT,
+          TestChoices.COPY_DRAFT,
+          TestChoices.SEND_DRAFT,
           TestChoices.QUIT,
         ],
         message: "What test do you want to run?",
@@ -279,9 +261,6 @@ async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
     switch (answer[Prompts.TEST]) {
       case TestChoices.SEND:
         await sendMessage(userEmail, msGraphApi);
-        break;
-      case TestChoices.CHECK_SENT:
-        await checkMessage(userEmail, msGraphApi);
         break;
       case TestChoices.REPLY:
         await replyTo(userEmail, msGraphApi);
@@ -298,8 +277,14 @@ async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
       case TestChoices.GET_UNREAD_CONVERSATION:
         await getUnreadMessagesFromConversation(userEmail, msGraphApi);
         break;
-      case TestChoices.GET_LAST_UNREAD:
-        await getLastUnreadMessages(userEmail, msGraphApi);
+      case TestChoices.CREATE_DRAFT:
+        await copyDraft(userEmail, msGraphApi);
+        break;
+      case TestChoices.COPY_DRAFT:
+        await copyDraft(userEmail, msGraphApi);
+        break;
+      case TestChoices.SEND_DRAFT:
+        await copyDraft(userEmail, msGraphApi);
         break;
     }
   }
