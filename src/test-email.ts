@@ -101,7 +101,7 @@ async function sendMessage(userEmail: string, msGraphApi: CNO365Outlook) {
   }
 
   await msGraphApi.sendMessage(
-    [toAddress],
+    toAddress.split(";"),
     [],
     [],
     userEmail,
