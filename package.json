@@ -59,9 +59,9 @@
     "@cn-shell/o365": "^1.1.0",
     "@microsoft/microsoft-graph-types": "^1.41.0",
     "@types/inquirer": "^7.3.3",
-    "@types/node": "^12.20.26",
-    "cn-shell": "^2.19.0",
-    "inquirer": "^8.1.5",
+    "@types/node": "^12.20.36",
+    "cn-shell": "^2.22.0",
+    "inquirer": "^8.2.0",
     "typescript": "^3.9.10"
   },
   "repository": {
