@@ -20,7 +20,8 @@ enum Prompts {
 
 enum TestChoices {
   SEND = "Send Email",
-  REPLY = "Reply to email",
+  REPLY_ALL = "Reply to all email",
+  REPLY_TO = "Reply to email",
   GET = "Get Conversation",
   GET_UNREAD = "Get for unread emails",
   GET_UNREAD_CONVERSATION = "Get for unread emails from conversation",
@@ -120,7 +121,7 @@ async function sendMessage(userEmail: string, msGraphApi: CNO365Outlook) {
   );
 }
 
-async function replyTo(userEmail: string, msGraphApi: CNO365Outlook) {
+async function replyToAll(userEmail: string, msGraphApi: CNO365Outlook) {
   let answer = await inquirer.prompt([
     {
       type: "input",
@@ -142,6 +143,30 @@ async function replyTo(userEmail: string, msGraphApi: CNO365Outlook) {
   let body = answer[Prompts.BODY];
 
   await msGraphApi.replyToAllInConversation(userEmail, body, refCode);
+}
+
+async function replyTo(userEmail: string, msGraphApi: CNO365Outlook) {
+  let answer = await inquirer.prompt([
+    {
+      type: "input",
+      name: Prompts.REF,
+      message: "Input ref code:",
+    },
+  ]);
+
+  let refCode = answer[Prompts.REF];
+
+  answer = await inquirer.prompt([
+    {
+      type: "input",
+      name: Prompts.BODY,
+      message: "Input reply email body:",
+    },
+  ]);
+
+  let body = answer[Prompts.BODY];
+
+  await msGraphApi.replyToConversation(userEmail, body, refCode);
 }
 
 async function getConversation(userEmail: string, msGraphApi: CNO365Outlook) {
@@ -240,7 +265,8 @@ async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
         name: Prompts.TEST,
         choices: [
           TestChoices.GET,
-          TestChoices.REPLY,
+          TestChoices.REPLY_ALL,
+          TestChoices.REPLY_TO,
           TestChoices.SEND,
           TestChoices.GET_UNREAD,
           TestChoices.GET_UNREAD_CONVERSATION,
@@ -262,7 +288,10 @@ async function markEmailRead(userEmail: string, msGraphApi: CNO365Outlook) {
       case TestChoices.SEND:
         await sendMessage(userEmail, msGraphApi);
         break;
-      case TestChoices.REPLY:
+      case TestChoices.REPLY_ALL:
+        await replyToAll(userEmail, msGraphApi);
+        break;
+      case TestChoices.REPLY_TO:
         await replyTo(userEmail, msGraphApi);
         break;
       case TestChoices.GET:

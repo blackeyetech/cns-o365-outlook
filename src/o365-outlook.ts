@@ -84,6 +84,51 @@ class CNO365Outlook extends CNO365 {
     return res.data.value[0].conversationId;
   }
 
+  private async getFirstMsgInConversation(
+    user: string,
+    refCode: string,
+  ): Promise<MSGraph.Message | undefined> {
+    let conversationId = await this.getConversationId(user, refCode);
+
+    if (conversationId === "") {
+      return undefined;
+    }
+
+    // Note: To use receivedDateTime in $orderby you must also have
+    // the receivedDateTime in the $filter so just choose a valid date in the past
+    // We only need the last msg so set $top to 1
+    let query = qs.stringify({
+      $filter: `receivedDateTime ge 2000-01-01T00:01:00Z and conversationId eq '${conversationId}'`,
+      $orderby: "receivedDateTime asc",
+      $top: 1,
+    });
+
+    let res = await this.httpReq({
+      method: "get",
+      url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages?${query}`,
+      headers: {
+        Authorization: `Bearer ${this._token}`,
+        "outlook.body-content-type": "text",
+      },
+    }).catch(e => {
+      this.error(
+        "Error while getting first msg in conversation for ref code (%s) - (%s)",
+        refCode,
+        e,
+      );
+    });
+
+    if (
+      res === undefined ||
+      res.status !== 200 ||
+      res.data.value.length === 0
+    ) {
+      return undefined;
+    }
+
+    return res.data.value[0];
+  }
+
   private async getLastMsgInConversation(
     user: string,
     refCode: string,
@@ -112,7 +157,7 @@ class CNO365Outlook extends CNO365 {
       },
     }).catch(e => {
       this.error(
-        "Error while getting conversation for ref code (%s) - (%s)",
+        "Error while getting last msg in conversation for ref code (%s) - (%s)",
         refCode,
         e,
       );
@@ -445,6 +490,47 @@ class CNO365Outlook extends CNO365 {
       data: { comment },
     }).catch(e => {
       this.error("Error while replying to all - (%s)", e);
+    });
+
+    if (res === undefined || res.status !== 202) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public async replyToConversation(
+    user: string,
+    comment: string,
+    refCode: string,
+  ): Promise<boolean> {
+    let firstMsg = await this.getFirstMsgInConversation(user, refCode);
+
+    if (firstMsg === undefined) {
+      return false;
+    }
+
+    let message: MSGraph.Message = {
+      toRecipients: firstMsg.toRecipients,
+      ccRecipients: firstMsg.ccRecipients,
+    };
+
+    let lastMsg = await this.getFirstMsgInConversation(user, refCode);
+
+    if (lastMsg === undefined) {
+      return false;
+    }
+
+    let res = await this.httpReq({
+      method: "post",
+      url: `${this._resource}/${GRAPH_API_VERSION}/users/${user}/messages/${lastMsg.id}/reply`,
+      headers: {
+        Authorization: `Bearer ${this._token}`,
+        "Content-Type": "application/json",
+      },
+      data: { comment, message },
+    }).catch(e => {
+      this.error("Error while replying to conversation - (%s)", e);
     });
 
     if (res === undefined || res.status !== 202) {
