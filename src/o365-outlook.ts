@@ -515,7 +515,7 @@ class CNO365Outlook extends CNO365 {
       ccRecipients: firstMsg.ccRecipients,
     };
 
-    let lastMsg = await this.getFirstMsgInConversation(user, refCode);
+    let lastMsg = await this.getLastMsgInConversation(user, refCode);
 
     if (lastMsg === undefined) {
       return false;
